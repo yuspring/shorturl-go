@@ -1,0 +1,196 @@
+:root {
+    --pico-border-radius: 1rem;
+    --pico-font-size: 16px;
+}
+
+[data-theme="light"] {
+    --pill-bg: #ffffff;
+    --pill-border: #e2e8f0;
+    --back-link-color: #000000;
+}
+
+[data-theme="dark"] {
+    --pill-bg: #1e293b;
+    --pill-border: #334155;
+    --back-link-color: #ffffff;
+}
+
+/* Body Layout - Perfectly Centered */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    background-color: var(--pico-background-color);
+}
+
+main.container {
+    max-width: 480px;
+    width: 100%;
+    margin: 0;
+    /* Remove top margin for perfect vertical centering */
+}
+
+article {
+    border-radius: 1.5rem;
+    box-shadow: var(--pico-box-shadow);
+    padding: 2rem;
+    margin: 0;
+    border: none;
+}
+
+
+/* Result View */
+.result-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+    width: 100%;
+}
+
+.pill-container {
+    background: var(--pill-bg);
+    border: 1px solid var(--pill-border);
+    border-radius: 1rem;
+    padding: 1.25rem 2rem;
+    margin: 1.5rem auto 0 auto;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    text-decoration: none !important;
+}
+
+.pill-container:hover {
+    background-color: rgba(0, 126, 255, 0.08) !important;
+    /* Subtle blue tint */
+    border-color: var(--pico-primary);
+    text-decoration: none !important;
+}
+
+.pill-small {
+    padding: 0.75rem 1.5rem;
+    max-width: 240px;
+    margin-top: 3.5rem;
+}
+
+.pill-small .short-url-text {
+    color: var(--back-link-color) !important;
+    font-size: 1.1rem;
+}
+
+.short-url-text {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--pico-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    text-align: center;
+    max-width: 100%;
+}
+
+.copy-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+/* Back Home Button Style handled by .pill-container and .pill-small */
+
+#aliasContainer {
+    display: none;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* Theme Toggle - Fixed Top Right */
+.theme-toggle-fixed {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    border-radius: 50% !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 0 !important;
+    /* Prevent inheriting global button width */
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--pico-muted-border-color) !important;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.theme-icon {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Form Styles */
+input {
+    border-radius: 0.75rem !important;
+}
+
+button {
+    border-radius: 0.75rem !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: 220px;
+    /* Slightly longer as requested */
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    /* Required for auto margins to work */
+}
+
+.mt-2 {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 480px) {
+
+    /* 縮減手機版的卡片邊距，留給內容更多空間 */
+    article {
+        padding: 1.25rem;
+    }
+
+    /* 確保按鈕在手機上比例正確 */
+    button {
+        min-width: 180px;
+        width: 80%;
+    }
+
+    /* 讓主題按鈕在手機上更精簡且往邊角移動 */
+    .theme-toggle-fixed {
+        top: 1rem;
+        right: 1rem;
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .theme-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* 調小手機版文字 */
+    .short-url-text {
+        font-size: 1.1rem;
+    }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shorturl-go</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <button id="themeBtn" class="outline contrast theme-toggle-fixed" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <svg class="theme-icon" id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
+
+    <main class="container">
+        <article>
+            <h3 style="margin-bottom: 1.5rem; font-weight: 700;">shorturl-go</h3>
+
+            {{/* Error is now handled natively by aria-invalid on the input field */}}
+
+            {{if eq .Mode "result"}}
+            <div class="result-view">
+                <div class="pill-container" onclick="copyLink()" title="Click to copy">
+                    <span class="short-url-text" id="shortUrl">{{.ShortURL}}</span>
+                </div>
+                <div class="copy-hint" id="copyHint">Click to copy</div>
+
+                <a href="/" class="pill-container pill-small">
+                    <span class="short-url-text" style="font-size: 1.1rem;">Back Home</span>
+                </a>
+            </div>
+
+            {{else if eq .Mode "stats"}}
+            <div class="result-view">
+                <p style="margin-bottom: 0.5rem; opacity: 0.7;">Analytics for {{.ShortID}}</p>
+                <div style="font-size: 4rem; font-weight: 800; color: var(--pico-primary); line-height: 1;">
+                    {{.StatsCount}}
+                </div>
+                <p style="font-weight: 600; opacity: 0.8;">Total Interactions</p>
+                <a href="/" class="pill-container pill-small">
+                    <span class="short-url-text" style="font-size: 1.1rem;">Back Home</span>
+                </a>
+            </div>
+
+            {{else}}
+            <form action="/shorten" method="POST">
+                <label for="url">
+                    <input type="text" id="url" name="url" placeholder="Paste your long link here..." required
+                        value="{{.OriginalURL}}" {{if .Error}}aria-invalid="true" aria-describedby="invalid-helper"
+                        {{end}}>
+                    {{if .Error}}
+                    <small id="invalid-helper"
+                        style="color: var(--pico-form-element-invalid-border-color);">{{.Error}}</small>
+                    {{end}}
+                </label>
+
+                <fieldset>
+                    <label>
+                        <input type="checkbox" id="aliasToggle" role="switch" onchange="toggleAlias()">
+                        Enable Custom Shorturl
+                    </label>
+                </fieldset>
+
+                <div id="aliasContainer">
+                    <input type="text" id="alias" name="alias" placeholder="custom shorturl" value="{{.CustomAlias}}"
+                        pattern="[a-zA-Z0-9]{3,20}" title="3-20 alphanumeric characters only">
+                </div>
+
+                <button type="submit" class="mt-2">Shorten Link</button>
+            </form>
+            {{end}}
+        </article>
+    </main>
+
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>

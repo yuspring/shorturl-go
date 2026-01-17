@@ -43,16 +43,42 @@
                 </a>
             </div>
 
-            {{else if eq .Mode "stats"}}
-            <div class="result-view">
-                <p style="margin-bottom: 0.5rem; opacity: 0.7;">Analytics for {{.ShortID}}</p>
-                <div style="font-size: 4rem; font-weight: 800; color: var(--pico-primary); line-height: 1;">
-                    {{.StatsCount}}
+            {{else if eq .Mode "statsAll"}}
+            <style>
+                @media (min-width: 992px) {
+                    main.container { max-width: 90% !important; }
+                }
+            </style>
+            <div class="stats-list-view">
+                <div class="overflow-auto">
+                    <table class="striped">
+                        <thead>
+                            <tr>
+                                <th>ShortID</th>
+                                <th>Original URL</th>
+                                <th style="text-align: right;">Hits</th>
+                                <th style="text-align: right;">Expires At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .StatsRows}}
+                            <tr>
+                                <td><a href="/{{.ShortID}}" target="_blank" class="secondary">{{.ShortID}}</a></td>
+                                <td style="max-width: 450px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <span title="{{.OriginalURL}}">{{.OriginalURL}}</span>
+                                </td>
+                                <td style="text-align: right; font-weight: 600;">{{.Hits}}</td>
+                                <td style="text-align: right; opacity: 0.8; font-size: 0.9rem;">{{.ExpiresAt}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
                 </div>
-                <p style="font-weight: 600; opacity: 0.8;">Total Interactions</p>
-                <a href="/" class="pill-container pill-small">
-                    <span class="short-url-text" style="font-size: 1.1rem;">Back Home</span>
-                </a>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="/" class="pill-container pill-small" style="display: inline-flex; text-decoration: none;">
+                        <span class="short-url-text" style="font-size: 1rem;">Back Home</span>
+                    </a>
+                </div>
             </div>
 
             {{else}}

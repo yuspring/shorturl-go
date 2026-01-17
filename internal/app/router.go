@@ -19,7 +19,7 @@ func (s *Server) SetupRoutes(staticFS fs.FS) http.Handler {
 
 	mux.HandleFunc("GET /{$}", s.rootHandler)
 	mux.HandleFunc("POST /shorten", s.shortenHandler)
-	mux.HandleFunc("GET /stats/{id}", s.statsHandler)
+	mux.HandleFunc("GET /stats", s.basicAuthMiddleware(s.listAllStatsHandler))
 	mux.HandleFunc("GET /{id}", s.redirectHandler)
 
 	return SecurityHeaders(mux)
@@ -118,24 +118,37 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/?id="+shortID, http.StatusFound)
 }
 
-func (s *Server) statsHandler(w http.ResponseWriter, r *http.Request) {
-	shortID := r.PathValue("id")
-
-	if shortID == "" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+func (s *Server) listAllStatsHandler(w http.ResponseWriter, r *http.Request) {
+	keys, err := s.rdb.Keys(r.Context(), "url:*").Result()
+	if err != nil {
+		slog.Error("failed to list keys", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	exists, err := s.rdb.Exists(r.Context(), "url:"+shortID).Result()
-	if err != nil || exists == 0 {
-		s.renderTemplate(w, PageData{Mode: "home", Error: "Short URL not found or expired"})
-		return
+	rows := make([]StatsRow, 0, len(keys))
+	for _, key := range keys {
+		shortID := strings.TrimPrefix(key, "url:")
+		original, err := s.rdb.Get(r.Context(), key).Result()
+		if err != nil {
+			continue
+		}
+		hits, _ := s.rdb.Get(r.Context(), "hits:"+shortID).Int64()
+
+		// 獲取過期時間
+		ttl, _ := s.rdb.TTL(r.Context(), key).Result()
+		expiresAt := "Never"
+		if ttl > 0 {
+			expiresAt = time.Now().Add(ttl).Format("2006-01-02 15:04")
+		}
+
+		rows = append(rows, StatsRow{
+			ShortID:     shortID,
+			OriginalURL: original,
+			Hits:        hits,
+			ExpiresAt:   expiresAt,
+		})
 	}
 
-	count, err := s.rdb.Get(r.Context(), "hits:"+shortID).Int64()
-	if err != nil && err != redis.Nil {
-		count = 0
-	}
-
-	s.renderTemplate(w, PageData{Mode: "stats", ShortID: shortID, StatsCount: count})
+	s.renderTemplate(w, PageData{Mode: "statsAll", StatsRows: rows})
 }

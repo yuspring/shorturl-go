@@ -23,6 +23,13 @@ type Server struct {
 	adminPass string
 }
 
+type StatsRow struct {
+	ShortID     string
+	OriginalURL string
+	Hits        int64
+	ExpiresAt   string
+}
+
 type PageData struct {
 	OriginalURL string
 	ShortURL    string
@@ -31,6 +38,7 @@ type PageData struct {
 	StatsCount  int64
 	Error       string
 	Mode        string
+	StatsRows   []StatsRow
 }
 
 func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {

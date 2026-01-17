@@ -15,28 +15,30 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-	if err := godotenv.Load(); err != nil {
-		slog.Warn(".env file not found or could not be loaded", "error", err)
+	godotenv.Load()
+
+	adminUser := os.Getenv("ADMIN_USER")
+	adminPass := os.Getenv("ADMIN_PASS")
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
 	conf := &Config{
-		AdminUser: getEnv("ADMIN_USER", "admin"),
-		AdminPass: getEnv("ADMIN_PASS", "admin"),
-		RedisAddr: getEnv("REDIS_ADDR", "localhost:6379"),
-		Port:      getEnv("PORT", "8080"),
+		AdminUser: adminUser,
+		AdminPass: adminPass,
+		RedisAddr: redisAddr,
+		Port:      port,
 	}
 
 	if conf.AdminUser == "" || conf.AdminPass == "" {
-		slog.Error("Critical security error: USER or PASSWORD environment variables are not set")
+		slog.Error("Critical security error: ADMIN_USER or ADMIN_PASS environment variables are not set")
 		return nil, os.ErrInvalid
 	}
 
 	return conf, nil
-}
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }

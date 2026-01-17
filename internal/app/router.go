@@ -81,6 +81,11 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(r.FormValue("url"))
 	customAlias := strings.TrimSpace(r.FormValue("alias"))
 
+	if strings.Contains(originalURL, r.Host) {
+		s.renderTemplate(w, PageData{Mode: "home", Error: "Cannot shorten URLs belonging to this service", OriginalURL: originalURL, CustomAlias: customAlias})
+		return
+	}
+
 	normalizedURL, err := validateURL(originalURL)
 	if err != nil {
 		s.renderTemplate(w, PageData{Mode: "home", Error: err.Error(), OriginalURL: originalURL, CustomAlias: customAlias})
@@ -135,7 +140,6 @@ func (s *Server) listAllStatsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		hits, _ := s.rdb.Get(r.Context(), "hits:"+shortID).Int64()
 
-		// 獲取過期時間
 		ttl, _ := s.rdb.TTL(r.Context(), key).Result()
 		expiresAt := "Never"
 		if ttl > 0 {

@@ -22,7 +22,6 @@ func (s *Server) SetupRoutes(staticFS fs.FS) http.Handler {
 	mux.HandleFunc("GET /stats/{id}", s.statsHandler)
 	mux.HandleFunc("GET /{id}", s.redirectHandler)
 
-	// 使用安全標頭中間件包裝整個 Mux
 	return SecurityHeaders(mux)
 }
 

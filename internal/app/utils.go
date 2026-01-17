@@ -35,7 +35,6 @@ func (s *Server) generateUniqueKey(ctx context.Context, originalURL string) (str
 func randomBase62(length int) string {
 	b := make([]byte, length)
 	for i := range b {
-		// 使用 Go 1.22+ rand.N，更簡潔且快速（預設使用 ChaCha8）
 		b[i] = base62Chars[rand.N(len(base62Chars))]
 	}
 	return string(b)
@@ -69,7 +68,7 @@ func validateURL(rawURL string) (string, error) {
 	return normalizedURL, nil
 }
 
-func PrintBanner(port string) {
+func PrintIPs(port string) {
 	fmt.Printf("➜  Local:   http://localhost%s\n", port)
 	for _, ip := range GetLocalIPs() {
 		fmt.Printf("➜  Network: http://%s%s\n", ip, port)

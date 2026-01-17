@@ -32,9 +32,8 @@ type PageData struct {
 	Mode        string
 }
 
-// NewServer 是一個伺服器構造函式
 func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {
-	// 從嵌入式檔案系統解析模板
+
 	tmpl, err := template.ParseFS(web.Assets, "template/index.html")
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse embedded templates: %w", err)
@@ -49,7 +48,7 @@ func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {
 }
 
 func (s *Server) Run(ctx context.Context, port string) error {
-	// 使用嵌入式檔案系統子目錄作為靜態資源
+
 	staticFS, err := fs.Sub(web.Assets, "static")
 	if err != nil {
 		return fmt.Errorf("failed to create static sub-fs: %w", err)
@@ -62,7 +61,7 @@ func (s *Server) Run(ctx context.Context, port string) error {
 	}
 
 	go func() {
-		PrintBanner(port)
+		PrintIPs(port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("Server error", "error", err)
 			os.Exit(1)

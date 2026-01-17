@@ -23,7 +23,7 @@ func LoadConfig() (*Config, error) {
 		AdminUser: os.Getenv("USER"),
 		AdminPass: os.Getenv("PASSWORD"),
 		RedisAddr: getEnv("REDIS_ADDR", "localhost:6379"),
-		Port:      getEnv("PORT", ":8080"),
+		Port:      getEnv("PORT", "8080"),
 	}
 
 	if conf.AdminUser == "" || conf.AdminPass == "" {

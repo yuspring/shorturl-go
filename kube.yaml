@@ -4,6 +4,7 @@ metadata:
   name: shorturl-go
 spec:
   containers:
+
     # redis container
     - name: redis
       image: docker.io/library/redis:8.4-alpine
@@ -44,6 +45,7 @@ spec:
           mountPath: /var/log/nginx
 
   volumes:
+
     # redis volume
     - name: redis-data
       persistentVolumeClaim:
@@ -53,12 +55,14 @@ spec:
     - name: nginx-logs
       persistentVolumeClaim:
         claimName: nginx-logs
+
     # nginx config volume
     - name: nginx-config-vol
       configMap:
         name: nginx-config
 
 ---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -3,4 +3,7 @@
 .gitignore
 README.md
 Dockerfile
-*.exe
+kube.yaml
+secret.yaml
+secret.yaml.example
+main

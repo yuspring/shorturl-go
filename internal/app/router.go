@@ -68,9 +68,23 @@ func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		ctx := context.Background()
-		s.rdb.Incr(ctx, "hits:"+shortID)
-		s.rdb.Expire(ctx, "hits:"+shortID, 3*24*time.Hour)
+		ctx := context.WithoutCancel(r.Context())
+
+		ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel()
+
+		if err := s.rdb.Incr(ctx, "hits:"+shortID).Err(); err != nil {
+			slog.ErrorContext(ctx, "failed to increment hits",
+				"shortID", shortID,
+				"error", err)
+			return
+		}
+
+		if err := s.rdb.Expire(ctx, "hits:"+shortID, 3*24*time.Hour).Err(); err != nil {
+			slog.WarnContext(ctx, "failed to set expiration for hits",
+				"shortID", shortID,
+				"error", err)
+		}
 	}()
 
 	http.Redirect(w, r, originalURL, http.StatusFound)
@@ -143,7 +157,8 @@ func (s *Server) listAllStatsHandler(w http.ResponseWriter, r *http.Request) {
 		ttl, _ := s.rdb.TTL(r.Context(), key).Result()
 		expiresAt := "Never"
 		if ttl > 0 {
-			expiresAt = time.Now().Add(ttl).Format("2006-01-02 15:04")
+			taipei := time.FixedZone("UTC+8", 8*60*60)
+			expiresAt = time.Now().In(taipei).Add(ttl).Format("2006-01-02 15:04")
 		}
 
 		rows = append(rows, StatsRow{

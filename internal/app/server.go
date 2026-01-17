@@ -2,11 +2,15 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"html/template"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"shorturl-go/web"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -28,10 +32,12 @@ type PageData struct {
 	Mode        string
 }
 
+// NewServer 是一個伺服器構造函式
 func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {
-	tmpl, err := template.ParseFiles("web/template/index.html")
+	// 從嵌入式檔案系統解析模板
+	tmpl, err := template.ParseFS(web.Assets, "template/index.html")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse embedded templates: %w", err)
 	}
 
 	return &Server{
@@ -43,7 +49,12 @@ func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {
 }
 
 func (s *Server) Run(ctx context.Context, port string) error {
-	mux := s.SetupRoutes("web/static")
+	// 使用嵌入式檔案系統子目錄作為靜態資源
+	staticFS, err := fs.Sub(web.Assets, "static")
+	if err != nil {
+		return fmt.Errorf("failed to create static sub-fs: %w", err)
+	}
+	mux := s.SetupRoutes(staticFS)
 
 	srv := &http.Server{
 		Addr:    port,

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -11,10 +12,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (s *Server) SetupRoutes(staticPath string) *http.ServeMux {
+func (s *Server) SetupRoutes(staticFS fs.FS) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(staticPath))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 
 	mux.HandleFunc("GET /{$}", s.rootHandler)
 	mux.HandleFunc("POST /shorten", s.shortenHandler)
@@ -61,7 +62,7 @@ func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	} else if err != nil {
-		slog.Error("database error on redirect", "id", shortID, "error", err)
+		slog.Error("database error on redirect", "id", shortID, "error", fmt.Errorf("failed to get url from redis: %w", err))
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +97,7 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		success, err := s.rdb.SetNX(r.Context(), "url:"+customAlias, originalURL, 3*24*time.Hour).Result()
 		if err != nil {
-			slog.Error("database error on custom alias set", "alias", customAlias, "error", err)
+			slog.Error("database error on custom alias set", "alias", customAlias, "error", fmt.Errorf("failed to set alias in redis: %w", err))
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return
 		}
@@ -108,6 +109,7 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortID, err = s.generateUniqueKey(r.Context(), originalURL)
 		if err != nil {
+			slog.Error("id generation failed", "url", originalURL, "error", fmt.Errorf("failed to generate unique key: %w", err))
 			http.Error(w, "Failed to generate short ID", http.StatusInternalServerError)
 			return
 		}

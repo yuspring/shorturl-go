@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (s *Server) SetupRoutes(staticFS fs.FS) *http.ServeMux {
+func (s *Server) SetupRoutes(staticFS fs.FS) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
@@ -22,7 +22,8 @@ func (s *Server) SetupRoutes(staticFS fs.FS) *http.ServeMux {
 	mux.HandleFunc("GET /stats/{id}", s.statsHandler)
 	mux.HandleFunc("GET /{id}", s.redirectHandler)
 
-	return mux
+	// 使用安全標頭中間件包裝整個 Mux
+	return SecurityHeaders(mux)
 }
 
 func (s *Server) rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,7 @@ func (s *Server) redirectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		slog.Error("database error on redirect", "id", shortID, "error", fmt.Errorf("failed to get url from redis: %w", err))
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		http.Error(w, "An internal error occurred", http.StatusInternalServerError)
 		return
 	}
 
@@ -98,7 +99,7 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 		success, err := s.rdb.SetNX(r.Context(), "url:"+customAlias, originalURL, 3*24*time.Hour).Result()
 		if err != nil {
 			slog.Error("database error on custom alias set", "alias", customAlias, "error", fmt.Errorf("failed to set alias in redis: %w", err))
-			http.Error(w, "Database error", http.StatusInternalServerError)
+			http.Error(w, "Failed to set custom alias", http.StatusInternalServerError)
 			return
 		}
 		if !success {
@@ -110,7 +111,7 @@ func (s *Server) shortenHandler(w http.ResponseWriter, r *http.Request) {
 		shortID, err = s.generateUniqueKey(r.Context(), originalURL)
 		if err != nil {
 			slog.Error("id generation failed", "url", originalURL, "error", fmt.Errorf("failed to generate unique key: %w", err))
-			http.Error(w, "Failed to generate short ID", http.StatusInternalServerError)
+			http.Error(w, "An internal error occurred", http.StatusInternalServerError)
 			return
 		}
 	}

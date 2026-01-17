@@ -20,12 +20,12 @@ spec:
           value: "localhost:6379"
         - name: PORT
           value: 8080
-        - name: USER
+        - name: ADMIN_USER
           valueFrom:
             secretKeyRef:
               name: USER
               key: USER
-        - name: PASSWORD
+        - name: ADMIN_PASS
           valueFrom:
             secretKeyRef:
               name: PASSWORD

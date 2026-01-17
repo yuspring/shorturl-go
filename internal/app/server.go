@@ -49,7 +49,7 @@ func NewServer(rdb *redis.Client, adminUserInfo [2]string) (*Server, error) {
 }
 
 func (s *Server) Run(ctx context.Context, port string) error {
-	// 確保埠號以冒號開頭，相容 "8080" 與 ":8080" 兩種格式
+
 	if !strings.HasPrefix(port, ":") {
 		port = ":" + port
 	}

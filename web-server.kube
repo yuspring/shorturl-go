@@ -1,0 +1,17 @@
+[Unit]
+Description=A Short URL Web Server
+
+[Kube]
+Yaml=%h/shorturl-go/shorturl-tmp.yaml
+
+Network=pasta
+
+[Service]
+WorkingDirectory=%h/shorturl-go
+Restart=on-failure
+TimeoutStartSec=300
+ExecStartPre=/bin/sh -c 'cat ./kube.yaml ./secret.yaml > ./shorturl-tmp.yaml'
+ExecStopPost=/usr/bin/rm -f ./shorturl-tmp.yaml
+
+[Install]
+WantedBy=default.target

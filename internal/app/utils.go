@@ -20,7 +20,7 @@ var alphaNumericRegex = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
 
 func (s *Server) generateUniqueKey(ctx context.Context, originalURL string) (string, error) {
 	for range 5 {
-		id := randomBase62(6)
+		id := randomBase62(5)
 		success, err := s.rdb.SetNX(ctx, "url:"+id, originalURL, 3*24*time.Hour).Result()
 		if err != nil {
 			return "", err
